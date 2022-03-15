@@ -1,8 +1,10 @@
 import { Router } from 'express'
+import type { RequestHandler } from 'express'
 import fs from 'fs'
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import config from 'config'
+import folderCheck from '@middleware/folderCheck'
 import authCheck from '@middleware/authCheck'
 import document from '@routes/document/router'
 
@@ -15,7 +17,7 @@ router.post('/:folderName', async (req, res) => {
 	if (fs.existsSync(`./${workDir}/${req.params.folderName}`)) {
 		return res
 			.status(403)
-			.send('Creation error: folder with this name already exists!')
+			.send('Creation error: folder with this name already exists')
 	}
 
 	const pass = uuid()
@@ -45,9 +47,45 @@ router.get('/:folderName', (req, res) => {
 	res.json({ routes })
 })
 
-router.patch('/:folderName', authCheck, (req, res) => {})
+router.patch('/:folderName', [folderCheck, authCheck], <RequestHandler>((
+	req,
+	res
+) => {
+	if (!req.body.folderName || typeof req.body.folderName !== 'string') {
+		return res
+			.status(400)
+			.send('Renaming error: new folder name must be specified')
+	}
 
-router.delete('/:folderName', authCheck, (req, res) => {})
+	if (fs.existsSync(`./${workDir}/${req.body.folderName}`)) {
+		return res
+			.status(403)
+			.send('Renaming error: folder with this name already exists')
+	}
+
+	fs.renameSync(
+		`./${workDir}/${req.params.folderName}/`,
+		`./${workDir}/${req.body.folderName}/`
+	)
+
+	res.send(
+		`Folder ${req.params.folderName} has been succesfully renamed to ${req.body.folderName}`
+	)
+}))
+
+router.delete('/:folderName', [folderCheck, authCheck], <RequestHandler>((
+	req,
+	res
+) => {
+	fs.rmSync(`./${workDir}/${req.params.folderName}/`, {
+		recursive: true,
+		force: true,
+	})
+
+	res.send(
+		`Folder ${req.params.folderName} and it's documents have been succesfully deleted`
+	)
+}))
 
 router.use('/:folderName/', document)
 

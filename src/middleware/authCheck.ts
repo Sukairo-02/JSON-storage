@@ -7,18 +7,8 @@ const workDir = config.get<string>('app.workDir')
 const passFile = config.get<string>('app.passFile')
 
 export = <RequestHandler>((req, res, next) => {
-	if (
-		!req.params.folderName ||
-		!req.body.password ||
-		typeof req.body.password !== 'string'
-	) {
+	if (!req.body.password || typeof req.body.password !== 'string') {
 		return res.status(400)
-	}
-
-	if (!fs.existsSync(`./${workDir}/${req.params.folderName}`)) {
-		return res
-			.status(404)
-			.send(`Nonexistent folder: ${req.params.folderName}`)
 	}
 
 	const pass =
