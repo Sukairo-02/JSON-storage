@@ -2,8 +2,7 @@ import { Router } from 'express'
 import type { RequestHandler, Request } from 'express'
 import fs from 'fs'
 import config from 'config'
-import letterCheckParam from '@middleware/letterCheckParam'
-import letterCheckBody from '@middleware/letterCheckBody'
+import letterCheck from '@middleware/letterCheck'
 import fileCheck from '@middleware/fileCheck'
 import folderCheck from '@middleware/folderCheck'
 import authCheck from '@middleware/authCheck'
@@ -26,7 +25,8 @@ router.get('/:fileName', fileCheck, (req, res) => {
 router.post(
 	'/:fileName',
 	[
-		letterCheckParam(
+		letterCheck(
+			'params',
 			'fileName',
 			'Invalid file name: file name must only contain letters or digits'
 		),
@@ -55,7 +55,8 @@ router.post(
 router.patch(
 	'/:fileName',
 	[
-		letterCheckBody(
+		letterCheck(
+			'body',
 			'fileName',
 			'Invalid file name: file name must only contain letters or digits'
 		),

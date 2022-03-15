@@ -4,8 +4,7 @@ import fs from 'fs'
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import config from 'config'
-import letterCheckParam from '@middleware/letterCheckParam'
-import letterCheckBody from '@middleware/letterCheckBody'
+import letterCheck from '@middleware/letterCheck'
 import folderCheck from '@middleware/folderCheck'
 import authCheck from '@middleware/authCheck'
 import document from '@routes/document/router'
@@ -27,7 +26,8 @@ router.get('/:folderName', folderCheck, (req, res) => {
 
 router.post(
 	'/:folderName',
-	letterCheckParam(
+	letterCheck(
+		'params',
 		'folderName',
 		'Invalid folder name: folder name must only contain letters or digits'
 	),
@@ -58,7 +58,8 @@ router.post(
 router.patch(
 	'/:folderName',
 	[
-		letterCheckBody(
+		letterCheck(
+			'body',
 			'folderName',
 			'Invalid folder name: folder name must only contain letters or digits'
 		),
