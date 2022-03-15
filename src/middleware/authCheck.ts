@@ -8,7 +8,7 @@ const passFile = config.get<string>('app.passFile')
 
 export = <RequestHandler>((req, res, next) => {
 	if (!req.body.password || typeof req.body.password !== 'string') {
-		return res.status(400)
+		return res.status(400).send('Password must be string')
 	}
 
 	const pass =

@@ -36,8 +36,7 @@ router.post('/:folderName', async (req, res) => {
 	})
 })
 
-router.get('/:folderName', (req, res) => {
-	console.log('Operation started...')
+router.get('/:folderName', folderCheck, (req, res) => {
 	const desiredFiles = new RegExp(/.*\.json$/)
 	const routes = fs
 		.readdirSync(`./${workDir}/${req.params.folderName}/`)
@@ -77,10 +76,7 @@ router.delete('/:folderName', [folderCheck, authCheck], <RequestHandler>((
 	req,
 	res
 ) => {
-	fs.rmSync(`./${workDir}/${req.params.folderName}/`, {
-		recursive: true,
-		force: true,
-	})
+	fs.rmdirSync(`./${workDir}/${req.params.folderName}/`, { recursive: true })
 
 	res.send(
 		`Folder ${req.params.folderName} and it's documents have been succesfully deleted`
