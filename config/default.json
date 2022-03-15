@@ -1,0 +1,9 @@
+{
+	"server": {
+		"PORT": 3000
+	},
+	"app": {
+		"workDir": "runtimeData",
+		"passFile": "credentials.pass"
+	}
+}
