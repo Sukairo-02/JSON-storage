@@ -4,6 +4,8 @@ import fs from 'fs'
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import config from 'config'
+import letterCheckParam from '@middleware/letterCheckParam'
+import letterCheckBody from '@middleware/letterCheckBody'
 import folderCheck from '@middleware/folderCheck'
 import authCheck from '@middleware/authCheck'
 import document from '@routes/document/router'
@@ -12,29 +14,6 @@ const workDir = config.get<string>('app.workDir')
 const passFile = config.get<string>('app.passFile')
 
 const router = Router()
-
-router.post('/:folderName', async (req, res) => {
-	if (fs.existsSync(`./${workDir}/${req.params.folderName}`)) {
-		return res
-			.status(403)
-			.send('Creation error: folder with this name already exists')
-	}
-
-	const pass = uuid()
-	const passHash = bcrypt.hashSync(pass, 7)
-
-	fs.mkdirSync(`./${workDir}/${req.params.folderName}`)
-	fs.writeFileSync(
-		`./${workDir}/${req.params.folderName}/${passFile}`,
-		passHash
-	)
-
-	res.json({
-		message:
-			'Folder has been succesfully created. Save your folder password to be able to operate it later...',
-		password: pass,
-	})
-})
 
 router.get('/:folderName', folderCheck, (req, res) => {
 	const desiredFiles = new RegExp(/.*\.json$/)
@@ -46,31 +25,69 @@ router.get('/:folderName', folderCheck, (req, res) => {
 	res.json({ routes })
 })
 
-router.patch('/:folderName', [folderCheck, authCheck], <RequestHandler>((
-	req,
-	res
-) => {
-	if (!req.body.folderName || typeof req.body.folderName !== 'string') {
-		return res
-			.status(400)
-			.send('Renaming error: new folder name must be specified')
+router.post(
+	'/:folderName',
+	letterCheckParam(
+		'folderName',
+		'Invalid folder name: folder name must only contain letters or digits'
+	),
+	async (req, res) => {
+		if (fs.existsSync(`./${workDir}/${req.params.folderName}`)) {
+			return res
+				.status(403)
+				.send('Creation error: folder with this name already exists')
+		}
+
+		const pass = uuid()
+		const passHash = bcrypt.hashSync(pass, 7)
+
+		fs.mkdirSync(`./${workDir}/${req.params.folderName}`)
+		fs.writeFileSync(
+			`./${workDir}/${req.params.folderName}/${passFile}`,
+			passHash
+		)
+
+		res.json({
+			message:
+				'Folder has been succesfully created. Save your folder password to be able to operate it later...',
+			password: pass,
+		})
 	}
+)
 
-	if (fs.existsSync(`./${workDir}/${req.body.folderName}`)) {
-		return res
-			.status(403)
-			.send('Renaming error: folder with this name already exists')
-	}
+router.patch(
+	'/:folderName',
+	[
+		letterCheckBody(
+			'folderName',
+			'Invalid folder name: folder name must only contain letters or digits'
+		),
+		folderCheck,
+		authCheck,
+	],
+	<RequestHandler>((req, res) => {
+		if (!req.body.folderName || typeof req.body.folderName !== 'string') {
+			return res
+				.status(400)
+				.send('Renaming error: new folder name must be specified')
+		}
 
-	fs.renameSync(
-		`./${workDir}/${req.params.folderName}/`,
-		`./${workDir}/${req.body.folderName}/`
-	)
+		if (fs.existsSync(`./${workDir}/${req.body.folderName}`)) {
+			return res
+				.status(403)
+				.send('Renaming error: folder with this name already exists')
+		}
 
-	res.send(
-		`Folder ${req.params.folderName} has been succesfully renamed to ${req.body.folderName}`
-	)
-}))
+		fs.renameSync(
+			`./${workDir}/${req.params.folderName}/`,
+			`./${workDir}/${req.body.folderName}/`
+		)
+
+		res.send(
+			`Folder ${req.params.folderName} has been succesfully renamed to ${req.body.folderName}`
+		)
+	})
+)
 
 router.delete('/:folderName', [folderCheck, authCheck], <RequestHandler>((
 	req,
@@ -83,6 +100,6 @@ router.delete('/:folderName', [folderCheck, authCheck], <RequestHandler>((
 	)
 }))
 
-router.use('/:folderName/', document)
+router.use('/:folderName', document)
 
 export = router
