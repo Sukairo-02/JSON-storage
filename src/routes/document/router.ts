@@ -88,10 +88,9 @@ router.patch(
 	})
 )
 
-router.delete('/:fileName', [folderCheck, authCheck], <RequestHandler>((
-	req,
-	res
-) => {
+router.delete('/:fileName', [fileCheck, folderCheck, authCheck], <
+	RequestHandler
+>((req, res) => {
 	fs.unlinkSync(
 		`./${workDir}/${req.params.folderName}/${req.params.fileName}.json`
 	)
