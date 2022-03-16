@@ -34,11 +34,11 @@ To begin uploading your documents, you must first `POST` folder in which it will
 -   `GET` - returns listing of files in that folder;
 -   `POST` - creates a new folder if a name is valid (latin alphabet letters or numbers only) and not occupied;
 -   `PATCH` :lock: - renames your folder, new name is passed in `"folderName": "newName"` of request's body;
--   `Delete` :lock: - deletes your folder and all it's contents.
+-   `DELETE` :lock: - deletes your folder and all it's contents.
 
 ### `/:folderName/:fileName`
 
 -   `GET` - returns your previously saved data in JSON format;
 -   `POST` :lock: - creates a new file from your request's body if a name is valid and not occupied;
 -   `PATCH` :lock: - renames your file, new name is passed in `"fileName": "newName"` of request's body;
--   `Delete` :lock: - deletes your file and all it's contents.
+-   `DELETE` :lock: - deletes your file and all it's contents.
